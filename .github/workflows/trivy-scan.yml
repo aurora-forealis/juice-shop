@@ -33,6 +33,7 @@ jobs:
             --format table \
             --ignore-unfixed \
             --vuln-type os,library \
+            --scanners vuln
             --severity CRITICAL,HIGH \
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
 
