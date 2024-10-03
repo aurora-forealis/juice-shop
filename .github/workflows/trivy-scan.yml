@@ -13,15 +13,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }} .
+      
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          image-ref: 'docker.io/secrets.DOCKERHUB_USERNAME/juice-shop:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+        run: |
+          trivy image \
+            --db-repository public.ecr.aws/aquasecurity/trivy-db \
+            --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
+            --format table \
+            --ignore-unfixed \
+            --vuln-type os,library \
+            --severity CRITICAL,HIGH \
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
