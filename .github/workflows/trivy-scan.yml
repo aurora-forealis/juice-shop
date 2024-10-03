@@ -13,11 +13,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install wget -y
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.45.1/trivy_0.45.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.45.1_Linux-64bit.deb
+
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }} .
-      
+
       - name: Run Trivy vulnerability scanner
         run: |
           trivy image \
@@ -27,4 +34,6 @@ jobs:
             --ignore-unfixed \
             --vuln-type os,library \
             --severity CRITICAL,HIGH \
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
+
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
