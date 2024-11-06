@@ -12,8 +12,21 @@ jobs:
   test-trivy:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.34.0_Linux-64bit.deb
+          sudo dpkg -i trivy_0.34.0_Linux-64bit.deb
+
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@master
-        id: trivy-scan
-        with:
-          image-ref: ${{ github.event.inputs.image_to_scan }}
+        run: |
+          trivy image \
+            --db-repository public.ecr.aws/aquasecurity/trivy-db \
+            --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
+            --format table \
+            --ignore-unfixed \
+            --vuln-type os,library \
+            --scanners vuln \
+            --severity CRITICAL,HIGH \
+            ${{ github.event.inputs.image_to_scan }}
