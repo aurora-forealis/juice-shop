@@ -1,28 +1,18 @@
-name: trivy_scan
+name: Trivy Test Scan
+
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:  # Allows you to manually trigger the workflow
+
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-20.04
+  test-trivy:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build an image from Dockerfile
-        run: |
-          docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }} .
-          docker build -t $IMAGE_REF .
-          echo "image_ref=$IMAGE_REF" >> $GITHUB_OUTPUT  # Save the image reference to be used in later steps
-          
-      - name: Run Trivy Scan
+      - name: Run Trivy Test Scan on nginx:latest
         uses: aquasecurity/trivy-action@master
         id: trivy-scan
         with:
-          image-ref: ${{ steps.build-image.outputs.image_ref }}
-        continue-on-error: false  # This makes sure that if Trivy finds vulnerabilities, the job fails.
+          image-ref: "nginx:latest"  # Specify any publicly available Docker image
+        continue-on-error: false  # Ensure the job fails if vulnerabilities are found
