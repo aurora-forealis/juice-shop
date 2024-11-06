@@ -14,27 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Trivy
-        run: |
-          sudo apt-get update
-          sudo apt-get install wget -y
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.45.1/trivy_0.45.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.45.1_Linux-64bit.deb
-
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }} .
-
-      - name: Run Trivy vulnerability scanner
-        run: |
-          trivy image \
-            --db-repository public.ecr.aws/aquasecurity/trivy-db \
-            --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
-            --format table \
-            --ignore-unfixed \
-            --vuln-type os,library \
-            --scanners vuln
-            --severity CRITICAL,HIGH \
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
-
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/juice-shop:${{ github.sha }}
+          docker build -t $IMAGE_REF .
+          echo "image_ref=$IMAGE_REF" >> $GITHUB_OUTPUT  # Save the image reference to be used in later steps
+          
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        id: trivy-scan
+        with:
+          image-ref: ${{ steps.build-image.outputs.image_ref }}
+        continue-on-error: false  # This makes sure that if Trivy finds vulnerabilities, the job fails.
