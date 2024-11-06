@@ -30,3 +30,16 @@ jobs:
             --scanners vuln \
             --severity CRITICAL,HIGH \
             ${{ github.event.inputs.image_to_scan }}
+
+      - name: Check for Vulnerabilities in Trivy Output
+        id: check-vulns
+        run: |
+          # Parse the JSON output and count CRITICAL or HIGH vulnerabilities
+          vuln_count=$(jq '[.[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL" or .Severity == "HIGH")] | length' trivy_output.json)
+          echo "Found $vuln_count CRITICAL/HIGH vulnerabilities."
+          
+          # Fail the job if any vulnerabilities are found
+          if [ "$vuln_count" -gt 0 ]; then
+            echo "Vulnerabilities detected. Failing the job."
+            exit 1
+          fi
