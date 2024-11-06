@@ -1,18 +1,19 @@
-name: Trivy Test Scan
+name: Run Trivy Scan Manually
 
 on:
-  workflow_dispatch:  # Allows you to manually trigger the workflow
+  workflow_dispatch:
+    inputs:
+      image_to_scan:
+        description: 'Docker image to scan'
+        required: true
+        default: 'nginx:latest'
 
 jobs:
   test-trivy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Run Trivy Test Scan on nginx:latest
+      - name: Run Trivy Scan
         uses: aquasecurity/trivy-action@master
         id: trivy-scan
         with:
-          image-ref: "nginx:latest"  # Specify any publicly available Docker image
-        continue-on-error: false  # Ensure the job fails if vulnerabilities are found
+          image-ref: ${{ github.event.inputs.image_to_scan }}
