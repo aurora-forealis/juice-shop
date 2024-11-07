@@ -25,10 +25,10 @@ jobs:
           trivy image \
             --db-repository public.ecr.aws/aquasecurity/trivy-db \
             --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
-            --format json \ 
-            --ignore-unfixed \ # do not report vulnerabilities with no extant patches
+            --format json \
+            --ignore-unfixed \
             --vuln-type os,library \
-            --scanners vuln \ 
+            --scanners vuln \
             --severity CRITICAL,HIGH \
             --output trivy_results.json \
             ${{ github.event.inputs.image_to_scan }}
