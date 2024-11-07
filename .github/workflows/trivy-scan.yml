@@ -14,7 +14,6 @@ jobs:
     steps:
       - name: Set up Trivy
         run: |
-          # installs latest version of Trivy from Github
           sudo apt-get update
           sudo apt-get install -y wget
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name')
