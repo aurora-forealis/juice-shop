@@ -29,4 +29,16 @@ jobs:
             --vuln-type os,library \
             --scanners vuln \
             --severity CRITICAL,HIGH \
+            --output trivy_results.json \
             ${{ github.event.inputs.image_to_scan }}
+
+      - name: Process Trivy Results
+        run: |
+          if jq -e '.Results[].Vulnerabilities | length > 0' trivy_results.json > /dev/null; then
+            echo "Vulnerabilities detected:"
+            jq -r '.Results[].Vulnerabilities[] | 
+              "Package: \(.PkgName)\nSeverity: \(.Severity)\nID: \(.VulnerabilityID)\nInstalled Version: \(.InstalledVersion)\nFixed Version: \(.FixedVersion)\nDescription: \(.Description)\nReference: \(.PrimaryURL)\n---"' trivy_results.json
+            exit 1
+          else
+            echo "No vulnerabilities detected."
+          fi
