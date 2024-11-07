@@ -23,7 +23,7 @@ jobs:
 
       - name: Run Trivy Scan
         run: |
-          trivy image \ # run a trivy image scan
+          trivy image \
             --db-repository public.ecr.aws/aquasecurity/trivy-db \
             --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
             --format json \ 
