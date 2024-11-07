@@ -14,6 +14,7 @@ jobs:
     steps:
       - name: Set up Trivy
         run: |
+          # installs latest version of Trivy from Github
           sudo apt-get update
           sudo apt-get install -y wget
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name')
@@ -22,13 +23,13 @@ jobs:
 
       - name: Run Trivy Scan
         run: |
-          trivy image \
+          trivy image \ # run a trivy image scan
             --db-repository public.ecr.aws/aquasecurity/trivy-db \
             --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
-            --format json \
-            --ignore-unfixed \
+            --format json \ 
+            --ignore-unfixed \ # do not report vulnerabilities with no extant patches
             --vuln-type os,library \
-            --scanners vuln \
+            --scanners vuln \ 
             --severity CRITICAL,HIGH \
             --output trivy_results.json \
             ${{ github.event.inputs.image_to_scan }}
