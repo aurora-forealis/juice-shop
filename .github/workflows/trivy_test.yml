@@ -54,7 +54,7 @@ jobs:
         
     - name: Process Trivy scan results
       run: |
-        if jq -e 'Results[].Vulnerabilities | length > 0' trivy_results.json > /dev/null; then
+        if jq -e 'Results[].Vulnerabilities | length > 0'; then
           echo "Vulnerabilities detected:"
           jq -r 'Results[].Vulnerabilities[] | 
             "Package: \(.PkgName)\nSeverity: \(.Severity)\nID: \(.VulnerabilityID)\nInstalled Version: \(.InstalledVersion)\nFixed Version: \(.FixedVersion)\nDescription: \(.Description)\nReference: \(.PrimaryURL)\n---"' trivy_results.json
