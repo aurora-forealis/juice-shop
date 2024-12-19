@@ -6,6 +6,11 @@ on:
       - main
 
   workflow_dispatch:
+    inputs:
+      image_to_scan:
+        description: 'Docker image to scan'
+        required: true
+        default: 'Dockerfile'
 
 jobs:
   test-trivy:
