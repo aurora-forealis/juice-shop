@@ -48,7 +48,7 @@ jobs:
           --scanners vuln \
           --severity CRITICAL,HIGH \
           --output trivy_results.json \
-          temp-docker-image:${{ github.sha }}
+          temp-docker-image:${{ github.sha }} --debug
         
     - name: Process Trivy scan results
       run: |
