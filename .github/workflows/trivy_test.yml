@@ -44,7 +44,7 @@ jobs:
           --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
           --format json \
           --ignore-unfixed \
-          --vuln-type os,library \
+          --pkg-types os,library \
           --scanners vuln \
           --severity CRITICAL,HIGH \
           --output trivy_results.json \
