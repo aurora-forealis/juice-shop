@@ -1,0 +1,16 @@
+name: "Test Trivy Image Scan"
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  test-trivy:
+    uses: ./.github/workflows/trivy_test.yml
+    with:
+      dockerfile_name: Dockerfile
+    secrets:
+      github_token_value: ${{ secrets.GITHUB_TOKEN }}
