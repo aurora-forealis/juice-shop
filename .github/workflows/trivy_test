@@ -1,0 +1,62 @@
+name: "Build image and run an image vulnerability scan via trivy"
+
+on:
+  workflow_call:
+
+    inputs:
+      dockerfile_name:
+        required: true
+        type: string
+        default: 'Dockerfile'
+
+    secrets:
+      github_token_value:
+        required: true
+
+jobs:
+  build-and-scan:
+    name: Build temporary image and run scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.github_token_value }}
+
+    - name: Build temporary image
+      id: build-temp-image
+      run: |
+        docker build -f ${{ inputs.dockerfile_name }} -t temp-docker-image:${{ github.sha }} .
+        
+    - name: Set up Trivy
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name')
+        wget https://github.com/aquasecurity/trivy/releases/download/${LATEST_VERSION}/trivy_${LATEST_VERSION#v}_Linux-64bit.deb
+        sudo dpkg -i trivy_${LATEST_VERSION#v}_Linux-64bit.deb
+          
+    - name: Run Trivy scan on Docker Image
+      run: |
+        trivy image \
+          --db-repository public.ecr.aws/aquasecurity/trivy-db \
+          --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db \
+          --format json \
+          --ignore-unfixed \
+          --vuln-type os,library \
+          --scanners vuln \
+          --severity CRITICAL,HIGH \
+          --output trivy_results.json \
+          temp-docker-image:${{ github.sha }}
+        
+    - name: Process Trivy scan results
+      run: |
+        if jq -e '.Results[].Vulnerabilities | length > 0' trivy_results.json > /dev/null; then
+          echo "Vulnerabilities detected:"
+          jq -r '.Results[].Vulnerabilities[] | 
+            "Package: \(.PkgName)\nSeverity: \(.Severity)\nID: \(.VulnerabilityID)\nInstalled Version: \(.InstalledVersion)\nFixed Version: \(.FixedVersion)\nDescription: \(.Description)\nReference: \(.PrimaryURL)\n---"' trivy_results.json
+          exit 1
+        else
+          echo "No vulnerabilities detected."
+        fi
